@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Переводчик — TapLink</title>
+  <style>
+    /* System fonts available on Android (Google) and Apple */
+    :root {
+      --bg:  linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+      --text: #0e1115;
+      --muted: #5b6472;
+      --soft: #eef1f4;
+      --brand: #0f7bff;
+      --card: #ffffff;
+      --border: #e6e9ee;
+      --shadow: 0 1px 2px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+      --radius: 16px;
+      --maxw: 560px; /* keep compact, mobile-first */
+    }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Noto Sans", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+      background: 
+        linear-gradient(rgba(255,255,255,var(--veil)), rgba(255,255,255,var(--veil))),
+        var(--bg),
+        url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAAABgAAAAAAAACQAAABAAAAMjAyNTowODoyMCAxOTowMjo1NwAAAQAAAGxpZ2h0cm9vbQAAAgAAAGphdmF2ZW5kZXIgMTUuMC4yAAAARAAAAGh0dHBzOi8vY2hhdGdwdC1hc3NldHMtYzJwcm9kLm9wZW5haS1jbmIuY29tL21udC9kYXRhL2ZvbmRvLWRlLXBhcGVsLXRhcGl6LWNvbG9yaWRvLWJvcnJvc28tdml2by5qcGcAAAACAAAASUNDAAAAAAAAZW5fR0IACAAIAAX/2wBDAAUDBAQEAwUEBAQFBQUGBQsIBgYICwwKCAsKCQ0RDg0NDg0RERERERISEhISFhYWGBgYGBgcHh4eHh4eHh4eHh4eHh4eHv/2wBDAQYGBgYHBwoICAoSHhIeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHv/wAARCAAQAPoDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYqJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYqJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD+eAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/2Q==") center / cover no-repeat;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    .page {
+      min-height: 100dvh;
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: max(12px, env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));
+      box-sizing: border-box;
+    }
+    /* Header */
+    .topbar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-top: 4px;
+      margin-bottom: 12px;
+    }
+    .avatar { width: 64px; height: 64px; border-radius: 50%;
+      background: var(--soft);
+      border: 2px solid #a8edea; /* мятная отводка */
+      box-shadow: 0 0 0 3px rgba(168,237,234,0.25), var(--shadow); /* мягкое свечение + тень */
+      overflow: hidden; display: grid; place-items: center;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .center { text-align: center; }
+    .headline {
+      font-size: 16px; font-weight: 700; letter-spacing: 0.2px; text-transform: uppercase;
+    }
+    /* extra spacing between role, name and languages */
+    .center .headline.lang-ru, .center .headline.lang-uk { margin-bottom: 6px; }
+    .headline.role { font-size: 13px; margin-bottom: 4px; }
+    .langs { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+    .lang-switch { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+    .lang-switch button {
+      appearance: none; border: 1px solid var(--border); background: var(--card);
+      padding: 8px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.3px; text-transform: uppercase; color: var(--muted);
+    }
+    .lang-switch button.active { border-color: var(--brand); color: var(--brand); }
+
+    /* Intro (plain text, not a card) */
+    .intro { padding: 0; border: none; background: transparent; box-shadow: none; margin: 6px 0 4px; }
+    .intro p { margin: 0; line-height: 1.5; font-size: 14px; color: var(--text); }
+
+    /* Price list */
+    .note-global { margin: 16px 0 8px; font-size: 12px; color: var(--muted); }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; margin-top: 12px; }
+    .card h2 { margin: 0 0 10px; font-size: 15px; }
+    .card h2.h2-split { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: baseline; }
+    .card h2.h2-split .price { text-align: right; }
+    .items { display: grid; gap: 8px; list-style: none; padding: 0; margin: 0; }
+    .item { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; }
+    .desc { font-size: 14px; color: var(--text); }
+    .price { font-size: 14px; font-weight: 700; white-space: nowrap; }
+    .sub { font-size: 13px; color: var(--muted); margin-top: 4px; grid-column: 1 / -1; }
+    .fine { font-size: 12px; color: var(--muted); margin-top: 6px; grid-column: 1 / -1; }
+
+    /* Floating contact buttons */
+    .fab-wrap {
+      position: fixed; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom));
+      display: flex; flex-direction: column; gap: 10px; z-index: 1000;
+    }
+    .fab {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--card);
+      box-shadow: var(--shadow); text-decoration: none; color: var(--text); font-weight: 700; font-size: 14px;
+    }
+    .fab svg { width: 18px; height: 18px; display: block; }
+
+    /* Language visibility */
+    [data-lang="ru"] .lang-ru { display: block; }
+    [data-lang="ru"] .lang-uk { display: none; }
+    [data-lang="uk"] .lang-ru { display: none; }
+    [data-lang="uk"] .lang-uk { display: block; }
+
+    /* Desktop guard: still looks fine but stays compact */
+    @media (min-width: 640px) {
+      /* keep card look but let the background image show through */
+      .page { margin-top: 24px; margin-bottom: 24px; border-radius: 20px; border: 1px solid var(--border); background: transparent; box-shadow: var(--shadow); }
+    }
+
+    /* Overlay veil control */
+  :root {
+      --bg:  linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      --text: #0e1115;
+      --muted: #5b6472;
+      --soft: #eef1f4;
+      --brand: #0f7bff;
+      --card: #ffffff;
+      --border: #e6e9ee;
+      --shadow: 0 1px 2px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+      --radius: 16px;
+      --maxw: 560px; /* keep compact, mobile-first */
+      --veil: .50;
+    }
+</style>
+</head>
+<body data-lang="ru">
+  <main class="page">
+    <header class="topbar">
+      <div class="avatar" aria-label="Фото профиля">
+        <!-- Замените src на ваше фото -->
+        <img id="avatar" src="https://drive.google.com/uc?export=view&id=15U1VTfVYO6bKqoBrGI6WSkkUqnntRIVM" data-avatar="https://drive.google.com/file/d/15U1VTfVYO6bKqoBrGI6WSkkUqnntRIVM/view?usp=drive_link" alt="Моя фотография" referrerpolicy="no-referrer" crossorigin="anonymous" />
+      </div>
+      <div class="center">
+        <div class="headline role lang-ru">Переводчик</div>
+        <div class="headline role lang-uk">Перекладач</div>
+        <div class="headline lang-ru">Анастасия Исмаилова</div>
+        <div class="headline lang-uk">Анастасія Ісмаілова</div>
+        <div class="langs lang-ru">украинский • русский • испанский</div>
+        <div class="langs lang-uk">українська • російська • іспанська</div>
+      </div>
+      <div class="lang-switch" role="group" aria-label="Выбор языка">
+        <button id="btn-uk" aria-pressed="false">UK</button>
+        <button id="btn-ru" class="active" aria-pressed="true">RU</button>
+      </div>
+    </header>
+
+    <!-- Intro / short description -->
+    <section class="intro">
+      <p class="lang-ru">Устные и письменные переводы в Испании. Помогу с документами, сопровождением и переговорами. Работаю оперативно и конфиденциально.</p>
+      <p class="lang-uk">Усний та письмовий переклад в Іспанії. Допоможу з документами, супроводом і перемовинами. Працюю оперативно та конфіденційно.</p>
+    </section>
+
+    <div class="note-global lang-ru">В каждом случае в стоимость входит консультация по необходимым документам.</div>
+    <div class="note-global lang-uk">У кожному випадку у вартість входить консультація щодо необхідних документів.</div>
+
+    <!-- PRICES (RU) -->
+    <section class="prices lang-ru">
+      <article class="card">
+        <h2 class="h2-split"><span>Образовательные учреждения</span><span class="price">1&nbsp;час / 20&nbsp;€</span></h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Подача документов</div></li>
+          <li class="item"><div class="desc">Школьные собрания</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Прописка</h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Оформление прописки</div><div class="price">20 €</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Nota Simple</h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Получение Nota Simple</div><div class="price">20 €</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Банк и нотариус</h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Открытие банковского счёта, установка приложения и мини‑консультация по использованию</div><div class="price">25 €</div></li>
+          <li class="item"><div class="desc">Сопровождение при оформлении сделки купли‑продажи</div><div class="price">1 час / 25 €</div></li>
+          <li class="item"><div class="desc">Сопровождение при оформлении доверенности</div><div class="price">1 час / 25 €</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2 class="h2-split"><span>Медицина</span><span class="price">1&nbsp;час / 20&nbsp;€</span></h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Оформление SIP‑карты, установка приложения и мини‑консультация как записаться к врачу</div></li>
+          <li class="item"><div class="desc">Сопровождение в государственные и частные медучреждения</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Электронный сертификат</h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Получение сертификата, активация на компьютере и установка мобильной версии</div><div class="price">30 €</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Обмен водительского удостоверения</h2>
+        <ul class="items">
+          <li class="item"><div class="desc"><strong>Украинские права, категория B</strong></div></li>
+          <li class="item"><div class="desc">Онлайн подача</div><div class="price">40 €</div></li>
+          <li class="item"><div class="desc">Выезд в полицию на обмен</div><div class="price">80 €</div></li>
+          <li class="item"><div class="desc">Медицинская справка</div><div class="price">20 €</div></li>
+          <li class="item fine">*Отдельно оплачиваются гос.пошлины и стоимость медсправки.</li>
+          <li class="item"><div class="desc"><strong>Польские права (все категории) + международные права</strong></div><div class="price">120 €</div></li>
+          <li class="item"><div class="desc">Медицинская справка</div><div class="price">20 €</div></li>
+          <li class="item"><div class="desc">Получение карты САР</div><div class="price">40 €</div></li>
+          <li class="item"><div class="desc">Получение карты ТАСО</div><div class="price">40 €</div></li>
+          <li class="item fine">*Отдельно оплачиваются гос.пошлины и стоимость медсправки.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Постановка авто на учет</h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Европейские номера <span class="sub">(работа и все платежи, кроме страховки*)</span></div><div class="price">от 800 €</div></li>
+          <li class="item"><div class="desc">Украинские номера <span class="sub">(работа и все платежи, кроме страховки*)</span></div><div class="price">от 800 €</div></li>
+          <li class="item fine">*Подбор страховки входит в стоимость.</li>
+        </ul>
+      </article>
+    </section>
+
+    <!-- PRICES (UK) -->
+    <section class="prices lang-uk">
+      <article class="card">
+        <h2 class="h2-split"><span>Освітні заклади</span><span class="price">1&nbsp;год / 20&nbsp;€</span></h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Подача документів</div></li>
+          <li class="item"><div class="desc">Шкільні збори</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Прописка</h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Оформлення прописки</div><div class="price">20 €</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Nota Simple</h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Отримання Nota Simple</div><div class="price">20 €</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Банк і нотаріус</h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Відкриття банківського рахунку, встановлення застосунку та міні‑консультація щодо користування</div><div class="price">25 €</div></li>
+          <li class="item"><div class="desc">Супровід під час оформлення угоди купівлі‑продажу</div><div class="price">1 год / 25 €</div></li>
+          <li class="item"><div class="desc">Супровід під час оформлення довіреності</div><div class="price">1 год / 25 €</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2 class="h2-split"><span>Медицина</span><span class="price">1&nbsp;год / 20&nbsp;€</span></h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Оформлення SIP‑картки, встановлення застосунку та міні‑консультація щодо запису до лікаря</div></li>
+          <li class="item"><div class="desc">Супровід до державних і приватних медзакладів</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Електронний сертифікат</h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Отримання сертифіката, активація на комп'ютері та встановлення мобільної версії</div><div class="price">30 €</div></li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Обмін посвідчення водія</h2>
+        <ul class="items">
+          <li class="item"><div class="desc"><strong>Українські права категорії B</strong></div></li>
+          <li class="item"><div class="desc">Онлайн‑подача</div><div class="price">40 €</div></li>
+          <li class="item"><div class="desc">Виїзд до поліції для обміну</div><div class="price">80 €</div></li>
+          <li class="item"><div class="desc">Медична довідка</div><div class="price">20 €</div></li>
+          <li class="item fine">*Окремо оплачуються держмита та вартість медичної довідки.</li>
+          <li class="item"><div class="desc"><strong>Польські права (усі категорії) + міжнародні права</strong></div><div class="price">120 €</div></li>
+          <li class="item"><div class="desc">Медична довідка</div><div class="price">20 €</div></li>
+          <li class="item"><div class="desc">Отримання карти САР</div><div class="price">40 €</div></li>
+          <li class="item"><div class="desc">Отримання карти ТАСО</div><div class="price">40 €</div></li>
+          <li class="item fine">*Окремо оплачуються держмита та вартість медичної довідки.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Постановка авто на облік</h2>
+        <ul class="items">
+          <li class="item"><div class="desc">Європейські номери <span class="sub">(робота та всі платежі, крім страховки*)</span></div><div class="price">від 800 €</div></li>
+          <li class="item"><div class="desc">Українські номери <span class="sub">(робота та всі платежі, крім страховки*)</span></div><div class="price">від 800 €</div></li>
+          <li class="item fine">*Підбір страховки входить у вартість.</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <!-- Floating WhatsApp/Telegram buttons (fixed bottom-right) -->
+  <div class="fab-wrap" aria-label="Быстрые контакты">
+    <a class="fab" href="https://wa.me/34645579941" target="_blank" rel="noopener" aria-label="Написать в WhatsApp">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.52 3.48A11.8 11.8 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.1.54 4.1 1.57 5.9L0 24l6.2-1.63A11.9 11.9 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.2-1.24-6.22-3.48-8.52zM12 22a9.9 9.9 0 0 1-5.06-1.4l-.36-.22-3.68.97.98-3.58-.23-.37A9.96 9.96 0 1 1 22 12 9.96 9.96 0 0 1 12 22zm5.26-7.35c-.29-.15-1.7-.84-1.96-.93-.26-.1-.45-.15-.64.15-.19.29-.73.95-.89 1.14-.16.19-.33.21-.6.07-.29-.15-1.21-.46-2.3-1.42a8.5 8.5 0 0 1-1.58-1.96c-.16-.29-.02-.45.12-.59.13-.13.29-.35.43-.52.14-.17.19-.29.29-.48.1-.19.05-.36-.03-.52-.08-.15-.6-1.44-.82-1.98-.22-.53-.45-.46-.62-.47l-.53-.01c-.19 0-.5.07-.76.35-.26.29-.99.97-.99 2.37 0 1.4 1 2.75 1.14 2.94.15.19 2 3.06 4.87 4.29.68.29 1.21.47 1.62.6.68.22 1.29.19 1.78.12.55-.08 1.66-.68 1.9-1.34.24-.66.24-1.22.17-1.34-.07-.12-.26-.19-.53-.33z"/></svg>
+      WhatsApp
+    </a>
+    <a class="fab" href="tg://resolve?domain=anastasiiaismailova" target="_blank" rel="noopener" aria-label="Написать в Telegram">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.036 15.28l-.375 5.29c.537 0 .77-.231 1.047-.509l2.51-2.415 5.203 3.805c.954.526 1.633.25 1.894-.884l3.43-16.05h.001c.305-1.421-.513-1.973-1.44-1.625L1.41 9.726c-1.384.537-1.363 1.307-.235 1.654l5.44 1.696 12.641-7.973c.594-.375 1.136-.167.691.208z"/></svg>
+      Telegram
+    </a>
+  </div>
+
+  <script>
+    (function(){
+      const body = document.body;
+      const btnRU = document.getElementById('btn-ru');
+      const btnUK = document.getElementById('btn-uk');
+      const saved = localStorage.getItem('lang');
+      if (saved === 'uk' || saved === 'ru') {
+        body.setAttribute('data-lang', saved);
+        btnRU.classList.toggle('active', saved === 'ru');
+        btnRU.setAttribute('aria-pressed', saved === 'ru');
+        btnUK.classList.toggle('active', saved === 'uk');
+        btnUK.setAttribute('aria-pressed', saved === 'uk');
+      }
+      btnRU.addEventListener('click', () => {
+        body.setAttribute('data-lang', 'ru');
+        btnRU.classList.add('active'); btnUK.classList.remove('active');
+        btnRU.setAttribute('aria-pressed', 'true'); btnUK.setAttribute('aria-pressed', 'false');
+        localStorage.setItem('lang','ru');
+      });
+      btnUK.addEventListener('click', () => {
+        body.setAttribute('data-lang', 'uk');
+        btnUK.classList.add('active'); btnRU.classList.remove('active');
+        btnUK.setAttribute('aria-pressed', 'true'); btnRU.setAttribute('aria-pressed', 'false');
+        localStorage.setItem('lang','uk');
+      });
+    })();
+  </script>
+  <script>
+    (function(){
+      function toDirectDriveUrl(url){
+        if(!url) return null;
+        try{
+          var m = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+          if(m) return 'https://drive.google.com/uc?export=view&id=' + m[1];
+          m = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
+          if(m) return 'https://drive.google.com/uc?export=view&id=' + m[1];
+          m = url.match(/drive\.google\.com\/uc\?id=([^&]+)/);
+          if(m) return 'https://drive.google.com/uc?export=view&id=' + m[1];
+          m = url.match(/lh3\.googleusercontent\.com\/d\/([^=?]+)/);
+          if(m) return url + (url.includes('=') ? '' : '=w256-h256-p-k-no-nu');
+          return url;
+        } catch(e){ return url; }
+      }
+      var img = document.getElementById('avatar');
+      if(img){
+        var qs = new URLSearchParams(location.search);
+        var link = qs.get('avatar') || img.getAttribute('data-avatar');
+        if(link){ img.src = toDirectDriveUrl(link); }
+      }
+    })();
+  </script>
+  <script>
+    (function(){
+      var img = document.getElementById('avatar');
+      if(!img) return;
+      // prefer data-avatar if present
+      var link = img.getAttribute('data-avatar') || img.getAttribute('src');
+      function extractId(u){
+        try{
+          var m = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([^/&?]+)/); if(m) return m[1];
+          m = u.match(/[?&]id=([^&]+)/); if(m) return m[1];
+          m = u.match(/lh3\.googleusercontent\.com\/d\/([^=?]+)/); if(m) return m[1];
+        }catch(e){}
+        return null;
+      }
+      var id = extractId(link);
+      var candidates = [];
+      if(id){
+        candidates = [
+          'https://drive.google.com/uc?export=view&id=' + id,
+          'https://drive.google.com/thumbnail?id=' + id + '&sz=w256-h256',
+          'https://lh3.googleusercontent.com/d/' + id + '=w256-h256-p-k-no-nu',
+          'https://lh3.googleusercontent.com/d/' + id
+        ];
+      } else if (link) {
+        candidates = [link];
+      }
+      var i = 0;
+      function tryNext(){
+        if(i >= candidates.length){
+          var ph = document.createElement('div');
+          ph.textContent = 'Фото';
+          ph.style = 'font-size:12px;color:#9aa3af;';
+          if(img && img.parentNode) img.replaceWith(ph);
+          return;
+        }
+        img.onerror = function(){ i++; tryNext(); };
+        img.src = candidates[i];
+      }
+      // reduce referrer leakage and enable CORS-friendly load
+      img.setAttribute('referrerpolicy','no-referrer');
+      img.crossOrigin = 'anonymous';
+      tryNext();
+    })();
+  </script>
+</body>
+</html>
